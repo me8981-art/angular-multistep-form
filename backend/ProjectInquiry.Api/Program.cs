@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using ProjectInquiry.Api.Data;
 using ProjectInquiry.Api.Models;
 
@@ -31,7 +32,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadRoot),
+    RequestPath = "/uploads"
+});
 app.UseCors("Frontend");
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
