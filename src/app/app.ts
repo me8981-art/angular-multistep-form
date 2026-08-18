@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProjectSubmission, SubmissionService, SubmissionStatus, TrackingResponse } from './submission.service';
+import { ProjectSubmission, SubmissionFile, SubmissionService, SubmissionStatus, TrackingResponse } from './submission.service';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +24,7 @@ export class App {
   protected readonly isAdminView = signal(false);
   protected readonly submissions = signal<ProjectSubmission[]>([]);
   protected readonly selectedSubmission = signal<ProjectSubmission | null>(null);
+  protected readonly selectedFile = signal<SubmissionFile | null>(null);
   protected readonly searchQuery = signal('');
   protected readonly statusFilter = signal<'All' | SubmissionStatus>('All');
   protected readonly adminLoading = signal(false);
@@ -121,6 +122,19 @@ export class App {
 
   protected closeSubmission(): void {
     this.selectedSubmission.set(null);
+    this.selectedFile.set(null);
+  }
+
+  protected openFile(file: SubmissionFile): void {
+    this.selectedFile.set(file);
+  }
+
+  protected closeFile(): void {
+    this.selectedFile.set(null);
+  }
+
+  protected isImageFile(file: SubmissionFile): boolean {
+    return file.contentType?.startsWith('image/') ?? /\.(png|jpe?g|webp|gif)$/i.test(file.originalName);
   }
 
   protected setStatus(status: SubmissionStatus): void {
