@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProjectSubmission, SubmissionService, SubmissionStatus } from './submission.service';
+import { ProjectSubmission, SubmissionService, SubmissionStatus, TrackingResponse } from './submission.service';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +14,13 @@ export class App {
   protected readonly submitted = signal(false);
   protected readonly submitting = signal(false);
   protected readonly submitError = signal('');
+  protected readonly profilePicture = signal<File | null>(null);
+  protected readonly attachments = signal<File[]>([]);
+  protected readonly trackingId = signal('');
+  protected readonly trackingQuery = signal('');
+  protected readonly trackingResult = signal<TrackingResponse | null>(null);
+  protected readonly trackingLoading = signal(false);
+  protected readonly trackingError = signal('');
   protected readonly isAdminView = signal(false);
   protected readonly submissions = signal<ProjectSubmission[]>([]);
   protected readonly selectedSubmission = signal<ProjectSubmission | null>(null);
@@ -59,6 +66,34 @@ export class App {
   protected readonly newCount = computed(() => this.submissions().filter((submission) => submission.status === 'New').length);
   protected readonly contactedCount = computed(() => this.submissions().filter((submission) => submission.status === 'Contacted').length);
 
+
+  protected onProfilePictureChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.profilePicture.set(input.files?.[0] ?? null);
+  }
+
+  protected onAttachmentsChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.attachments.set(Array.from(input.files ?? []));
+  }
+
+  protected lookupTracking(): void {
+    const query = this.trackingQuery().trim();
+    if (!query) return;
+    this.trackingLoading.set(true);
+    this.trackingError.set('');
+    this.trackingResult.set(null);
+    this.submissionService.lookupTracking(query).subscribe({
+      next: (result) => {
+        this.trackingResult.set(result);
+        this.trackingLoading.set(false);
+      },
+      error: () => {
+        this.trackingLoading.set(false);
+        this.trackingError.set('No submission was found for that tracking ID.');
+      }
+    });
+  }
 
   protected toggleAdmin(): void {
     this.isAdminView.update((isAdmin) => !isAdmin);
@@ -146,9 +181,10 @@ export class App {
 
     this.submitting.set(true);
     this.submitError.set('');
-    this.submissionService.createSubmission(this.form.getRawValue()).subscribe({
-      next: () => {
+    this.submissionService.createSubmission({ ...this.form.getRawValue(), profilePicture: this.profilePicture(), attachments: this.attachments() }).subscribe({
+      next: (response) => {
         this.submitting.set(false);
+        this.trackingId.set(response.trackingId);
         this.submitted.set(true);
       },
       error: () => {

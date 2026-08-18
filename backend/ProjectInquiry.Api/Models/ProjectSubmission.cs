@@ -6,6 +6,7 @@ public sealed class ProjectSubmission
 {
     public Guid Id { get; set; }
     public DateTime CreatedAtUtc { get; set; }
+    public string TrackingId { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
@@ -16,6 +17,20 @@ public sealed class ProjectSubmission
     public string Timeline { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public string Status { get; set; } = "New";
+    public List<SubmissionFile> Files { get; set; } = [];
+}
+
+public sealed class SubmissionFile
+{
+    public Guid Id { get; set; }
+    public Guid ProjectSubmissionId { get; set; }
+    public ProjectSubmission ProjectSubmission { get; set; } = null!;
+    public string OriginalName { get; set; } = string.Empty;
+    public string StoredName { get; set; } = string.Empty;
+    public string ContentType { get; set; } = "application/octet-stream";
+    public long Size { get; set; }
+    public string Kind { get; set; } = "Attachment";
+    public DateTime UploadedAtUtc { get; set; }
 }
 
 public sealed class CreateProjectSubmissionRequest
@@ -29,4 +44,8 @@ public sealed class CreateProjectSubmissionRequest
     [Required, MaxLength(80)] public string? Budget { get; init; }
     [Required, MaxLength(80)] public string? Timeline { get; init; }
     [MaxLength(4000)] public string? Notes { get; init; }
+    public IFormFile? ProfilePicture { get; init; }
+    public IReadOnlyList<IFormFile>? Attachments { get; init; }
 }
+
+public sealed record UpdateSubmissionStatusRequest(string Status);
