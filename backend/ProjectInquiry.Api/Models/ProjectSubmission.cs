@@ -15,6 +15,7 @@ public sealed class ProjectSubmission
     public string Budget { get; set; } = string.Empty;
     public string Timeline { get; set; } = string.Empty;
     public string? Notes { get; set; }
+    public string Status { get; set; } = "New";
 }
 
 public sealed class CreateProjectSubmissionRequest

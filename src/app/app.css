@@ -72,3 +72,31 @@
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.status-new { background: #e0e7ff; color: #4338ca; }
+.status-contacted { background: #fef3c7; color: #b45309; }
+.status-archived { background: #e2e8f0; color: #475569; }
+
+.detail-label {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  margin-top: 0.35rem;
+  color: #334155;
+  font-size: 0.875rem;
+  font-weight: 700;
+}

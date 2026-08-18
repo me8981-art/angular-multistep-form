@@ -20,6 +20,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         submission.Property(item => item.Budget).HasMaxLength(80).IsRequired();
         submission.Property(item => item.Timeline).HasMaxLength(80).IsRequired();
         submission.Property(item => item.Notes).HasMaxLength(4000);
+        submission.Property(item => item.Status).HasMaxLength(24).IsRequired();
         submission.Property(item => item.CreatedAtUtc).IsRequired();
         submission.HasIndex(item => item.CreatedAtUtc);
     }

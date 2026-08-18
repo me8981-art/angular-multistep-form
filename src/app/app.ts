@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SubmissionService } from './submission.service';
+import { ProjectSubmission, SubmissionService, SubmissionStatus } from './submission.service';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +14,13 @@ export class App {
   protected readonly submitted = signal(false);
   protected readonly submitting = signal(false);
   protected readonly submitError = signal('');
+  protected readonly isAdminView = signal(false);
+  protected readonly submissions = signal<ProjectSubmission[]>([]);
+  protected readonly selectedSubmission = signal<ProjectSubmission | null>(null);
+  protected readonly searchQuery = signal('');
+  protected readonly statusFilter = signal<'All' | SubmissionStatus>('All');
+  protected readonly adminLoading = signal(false);
+  protected readonly adminError = signal('');
   protected readonly steps = [
     { label: 'Your details', caption: 'Personal information' },
     { label: 'Preferences', caption: 'Tell us what you need' },
@@ -40,7 +47,74 @@ export class App {
   }
 
   protected readonly progress = computed(() => `${((this.currentStep() + 1) / this.steps.length) * 100}%`);
+  protected readonly filteredSubmissions = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    const status = this.statusFilter();
+    return this.submissions().filter((submission) => {
+      const matchesStatus = status === 'All' || submission.status === status;
+      const haystack = `${submission.firstName} ${submission.lastName} ${submission.email} ${submission.company ?? ''} ${submission.projectType}`.toLowerCase();
+      return matchesStatus && (!query || haystack.includes(query));
+    });
+  });
+  protected readonly newCount = computed(() => this.submissions().filter((submission) => submission.status === 'New').length);
+  protected readonly contactedCount = computed(() => this.submissions().filter((submission) => submission.status === 'Contacted').length);
 
+
+  protected toggleAdmin(): void {
+    this.isAdminView.update((isAdmin) => !isAdmin);
+    if (this.isAdminView()) this.loadSubmissions();
+  }
+
+  protected loadSubmissions(): void {
+    this.adminLoading.set(true);
+    this.adminError.set('');
+    this.submissionService.listSubmissions().subscribe({
+      next: (items) => {
+        this.submissions.set(items);
+        this.adminLoading.set(false);
+      },
+      error: () => {
+        this.adminLoading.set(false);
+        this.adminError.set('Could not load submissions. Make sure the API is running.');
+      }
+    });
+  }
+
+  protected openSubmission(submission: ProjectSubmission): void {
+    this.selectedSubmission.set(submission);
+  }
+
+  protected closeSubmission(): void {
+    this.selectedSubmission.set(null);
+  }
+
+  protected setStatus(status: SubmissionStatus): void {
+    const submission = this.selectedSubmission();
+    if (!submission) return;
+    this.submissionService.updateStatus(submission.id, status).subscribe({
+      next: (updated) => {
+        this.submissions.update((items) => items.map((item) => item.id === updated.id ? updated : item));
+        this.selectedSubmission.set(updated);
+      },
+      error: () => this.adminError.set('Could not update the submission status.')
+    });
+  }
+
+  protected deleteSelected(): void {
+    const submission = this.selectedSubmission();
+    if (!submission) return;
+    this.submissionService.deleteSubmission(submission.id).subscribe({
+      next: () => {
+        this.submissions.update((items) => items.filter((item) => item.id !== submission.id));
+        this.closeSubmission();
+      },
+      error: () => this.adminError.set('Could not delete the submission.')
+    });
+  }
+
+  protected formatDate(value: string): string {
+    return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
+  }
 
   protected next(): void {
     const controlsByStep = [
