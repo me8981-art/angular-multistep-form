@@ -137,6 +137,14 @@ export class App {
     return file.contentType?.startsWith('image/') ?? /\.(png|jpe?g|webp|gif)$/i.test(file.originalName);
   }
 
+  protected profileFile(submission: ProjectSubmission): SubmissionFile | undefined {
+    return submission.files.find((file) => file.kind === 'Profile picture');
+  }
+
+  protected attachmentFiles(submission: ProjectSubmission): SubmissionFile[] {
+    return submission.files.filter((file) => file.kind !== 'Profile picture');
+  }
+
   protected setStatus(status: SubmissionStatus): void {
     const submission = this.selectedSubmission();
     if (!submission) return;
