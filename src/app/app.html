@@ -1,0 +1,105 @@
+<main class="min-h-screen bg-[#f7f8fc] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-6xl">
+    <header class="mb-10 flex items-center justify-between">
+      <a class="flex items-center gap-3" href="#" aria-label="Northstar home">
+        <span class="grid size-10 place-items-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-lg shadow-indigo-200">N</span>
+        <span class="text-lg font-semibold tracking-tight">northstar<span class="text-indigo-600">.</span></span>
+      </a>
+      <span class="hidden text-sm font-medium text-slate-500 sm:block">New project inquiry</span>
+    </header>
+
+    @if (submitted()) {
+      <section class="mx-auto max-w-2xl rounded-3xl border border-emerald-100 bg-white p-8 text-center shadow-xl shadow-slate-200/60 sm:p-14">
+        <div class="mx-auto mb-6 grid size-16 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+          <svg class="size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6" /></svg>
+        </div>
+        <p class="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">Request received</p>
+        <h1 class="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Thanks, {{ form.value.firstName }}.</h1>
+        <p class="mx-auto mt-4 max-w-md leading-7 text-slate-500">Your project details are on their way to our team. We’ll get back to you within two business days.</p>
+        <button type="button" class="mt-8 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-600" (click)="submitted.set(false); currentStep.set(0); form.reset()">Submit another request</button>
+      </section>
+    } @else {
+      <div class="grid overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-200/70 lg:grid-cols-[280px_1fr]">
+        <aside class="bg-slate-950 p-7 text-white sm:p-9">
+          <p class="text-sm font-semibold text-indigo-300">Let’s work together</p>
+          <h1 class="mt-4 text-3xl font-bold leading-tight tracking-tight">Bring your next idea to life.</h1>
+          <p class="mt-4 text-sm leading-6 text-slate-400">Answer a few quick questions and we’ll match you with the right team.</p>
+
+          <nav class="mt-12 space-y-7" aria-label="Form progress">
+            @for (step of steps; track step.label; let i = $index) {
+              <button type="button" class="group flex w-full items-start gap-3 text-left" [class.cursor-pointer]="i < currentStep()" (click)="goToStep(i)">
+                <span class="grid size-8 shrink-0 place-items-center rounded-full border text-xs font-bold transition" [class.border-indigo-400]="i <= currentStep()" [class.bg-indigo-500]="i <= currentStep()" [class.text-white]="i <= currentStep()" [class.border-slate-700]="i > currentStep()" [class.text-slate-500]="i > currentStep()">
+                  @if (i < currentStep()) { ✓ } @else { {{ i + 1 }} }
+                </span>
+                <span>
+                  <span class="block text-sm font-semibold" [class.text-white]="i <= currentStep()" [class.text-slate-500]="i > currentStep()">{{ step.label }}</span>
+                  <span class="mt-1 block text-xs text-slate-500">{{ step.caption }}</span>
+                </span>
+              </button>
+            }
+          </nav>
+
+          <div class="mt-16 hidden rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-400 sm:block">
+            <span class="mb-2 block text-lg">✦</span>
+            No commitment required. We’ll use your answers to prepare a thoughtful first conversation.
+          </div>
+        </aside>
+
+        <section class="p-6 sm:p-10 lg:p-14">
+          <div class="mb-10 flex items-center justify-between gap-5">
+            <div>
+              <p class="text-sm font-semibold text-indigo-600">Step {{ currentStep() + 1 }} of {{ steps.length }}</p>
+              <h2 class="mt-2 text-2xl font-bold tracking-tight text-slate-950">{{ steps[currentStep()].label }}</h2>
+            </div>
+            <div class="w-28 shrink-0 sm:w-40">
+              <div class="mb-2 flex justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400"><span>Progress</span><span>{{ progress() }}</span></div>
+              <div class="h-1.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-indigo-600 transition-all duration-500" [style.width]="progress()"></div></div>
+            </div>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="currentStep() === steps.length - 1 ? submit() : next()" novalidate>
+            @if (currentStep() === 0) {
+              <div class="animate-fade-in">
+                <p class="mb-7 max-w-xl text-sm leading-6 text-slate-500">Tell us a little about yourself so we know who we’re speaking with. Fields marked with <span class="text-rose-500">*</span> are required.</p>
+                <div class="grid gap-5 sm:grid-cols-2">
+                  <label class="field">First name <span>*</span><input formControlName="firstName" placeholder="Alex" [class.input-error]="isInvalid('firstName')" /><small *ngIf="isInvalid('firstName')">First name is required.</small></label>
+                  <label class="field">Last name <span>*</span><input formControlName="lastName" placeholder="Morgan" [class.input-error]="isInvalid('lastName')" /><small *ngIf="isInvalid('lastName')">Last name is required.</small></label>
+                  <label class="field sm:col-span-2">Work email <span>*</span><input type="email" formControlName="email" placeholder="alex@company.com" [class.input-error]="isInvalid('email')" /><small *ngIf="isInvalid('email')">Enter a valid email address.</small></label>
+                  <label class="field sm:col-span-2">Company <em>Optional</em><input formControlName="company" placeholder="Acme Inc." /></label>
+                </div>
+              </div>
+            }
+
+            @if (currentStep() === 1) {
+              <div class="animate-fade-in">
+                <p class="mb-7 max-w-xl text-sm leading-6 text-slate-500">Help us understand the shape of your project so we can bring the right expertise to the table.</p>
+                <div class="grid gap-5 sm:grid-cols-2">
+                  <label class="field">Your role <span>*</span><select formControlName="role" [class.input-error]="isInvalid('role')"><option value="">Select your role</option><option>Founder / Owner</option><option>Product manager</option><option>Marketing leader</option><option>Designer</option><option>Other</option></select><small *ngIf="isInvalid('role')">Please select your role.</small></label>
+                  <label class="field">Project type <span>*</span><select formControlName="projectType" [class.input-error]="isInvalid('projectType')"><option value="">Select a type</option><option>Brand identity</option><option>Web design & development</option><option>Product design</option><option>Strategy & consulting</option><option>Something else</option></select><small *ngIf="isInvalid('projectType')">Please select a project type.</small></label>
+                  <label class="field">Estimated budget <span>*</span><select formControlName="budget" [class.input-error]="isInvalid('budget')"><option value="">Choose a range</option><option>$5k – $15k</option><option>$15k – $30k</option><option>$30k – $60k</option><option>$60k+</option></select><small *ngIf="isInvalid('budget')">Please choose a budget range.</small></label>
+                  <label class="field">Ideal timeline <span>*</span><select formControlName="timeline" [class.input-error]="isInvalid('timeline')"><option value="">Choose a timeline</option><option>As soon as possible</option><option>1–3 months</option><option>3–6 months</option><option>Flexible</option></select><small *ngIf="isInvalid('timeline')">Please choose a timeline.</small></label>
+                </div>
+              </div>
+            }
+
+            @if (currentStep() === 2) {
+              <div class="animate-fade-in">
+                <p class="mb-7 max-w-xl text-sm leading-6 text-slate-500">One last thing — add any context that will help us make our first conversation more useful.</p>
+                <label class="field">Project notes <em>Optional</em><textarea formControlName="notes" rows="6" placeholder="What are you hoping to achieve?"></textarea></label>
+                <div class="mt-7 rounded-2xl bg-slate-50 p-5">
+                  <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400">Your summary</p>
+                  <div class="grid gap-4 text-sm sm:grid-cols-2"><div><span class="text-slate-400">Name</span><p class="mt-1 font-semibold">{{ form.value.firstName }} {{ form.value.lastName }}</p></div><div><span class="text-slate-400">Email</span><p class="mt-1 font-semibold">{{ form.value.email }}</p></div><div><span class="text-slate-400">Project</span><p class="mt-1 font-semibold">{{ form.value.projectType }}</p></div><div><span class="text-slate-400">Budget</span><p class="mt-1 font-semibold">{{ form.value.budget }}</p></div></div>
+                </div>
+              </div>
+            }
+
+            <div class="mt-10 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <button type="button" class="rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-900" [class.invisible]="currentStep() === 0" (click)="back()">← Back</button>
+              <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 hover:shadow-indigo-300 sm:min-w-32">{{ currentStep() === steps.length - 1 ? 'Send request' : 'Continue →' }}</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    }
+  </div>
+</main>
