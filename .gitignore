@@ -46,3 +46,6 @@ Thumbs.db
 # .NET
 backend/**/bin/
 backend/**/obj/
+
+# Runtime uploads
+backend/ProjectInquiry.Api/wwwroot/uploads/
