@@ -121,6 +121,7 @@ app.MapPost("/api/submissions", async (HttpRequest httpRequest, AppDbContext db,
     if (request.Attachments is not null) files.AddRange(request.Attachments);
     if (files.Count > 10) return Results.ValidationProblem(new Dictionary<string, string[]> { ["attachments"] = ["You can upload up to 10 files."] });
 
+    Directory.CreateDirectory(uploadRoot);
     foreach (var file in files)
     {
         var kind = file == request.ProfilePicture ? "Profile picture" : "Attachment";
