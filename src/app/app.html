@@ -93,9 +93,10 @@
               </div>
             }
 
+            <p *ngIf="submitError()" class="mt-5 rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">{{ submitError() }}</p>
             <div class="mt-10 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <button type="button" class="rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-50 hover:text-slate-900" [class.invisible]="currentStep() === 0" (click)="back()">← Back</button>
-              <button type="submit" class="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 hover:shadow-indigo-300 sm:min-w-32">{{ currentStep() === steps.length - 1 ? 'Send request' : 'Continue →' }}</button>
+              <button type="submit" [disabled]="submitting()" class="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700 hover:shadow-indigo-300 disabled:cursor-wait disabled:opacity-60 sm:min-w-32">{{ submitting() ? 'Saving…' : (currentStep() === steps.length - 1 ? 'Send request' : 'Continue →') }}</button>
             </div>
           </form>
         </section>
